@@ -5,9 +5,16 @@ from sklearn.preprocessing import OneHotEncoder
 
 (x_train, y_train), (x_test, y_test) = mnist.load_data()
 
-y_train = y_train[0:100]
-x_train = x_train[:100]
+y_train = y_train[0:1000]
+x_train = x_train[:1000]
 x_train = x_train.reshape(x_train.shape[0], -1)
+
+def batches(x,y,batch_size):
+    sample = len(x)
+    x_new, y_new = zip(*random.sample(list(zip(x,y)),k=batch_size))
+    return x_new, y_new
+
+print(batches(x,y,4))
 
 def min_max_scaling(inputs):
     inputs_max = np.max(inputs)
