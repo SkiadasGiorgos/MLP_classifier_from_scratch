@@ -50,6 +50,7 @@ class ReLU:
         self.dvalues = np.sign(self.inputs)
 
 class Softmax:
+
     def forward(self, inputs):
         # the subtraction helps with memory overflow (not mentioned in nn book)
         exponent = np.exp(inputs - np.max(inputs, axis=1, keepdims=True))
@@ -73,9 +74,37 @@ class Loss:
         data_loss = np.mean(log_likelihood)
         return data_loss
 
+    def categorical_cross_entropy_backward(self,dvalues,y):
+        samples = len(dvalues)
+        labels = len(dvalues[0])
+
+        self.dinputs = -y/dvalues
+        self.dinputs = self.dinputs/samples
+
+class Softmax_loss_combination():
+    def __init__(self):
+        self.activation = Softmax()
+        self.loss = Loss()
+
+    def forward(self,inputs,y):
+        self.activation.forward(inputs)
+        self.ouput = self.activation.output
+
+        return self.loss.categorical_cross_entropy(self.ouput,y)
+
+    def backward(self,dvalues,y):
+        sample = len(dvalues)
+
+        if len(y.shape) == 2:
+            y = np.argmax(y, axis=1)
+
+        self.dinputs = dvalues.copy()
+        self.dinputs[range(sample), y] -= 1
+        self.dinputs = self.dinputs/sample
 
 soft = Softmax()
 reLu = ReLU()
+soft_loss_combo = Softmax_loss_combination()
 first_layer = Layer(x_train, 784, 60)
 first_layer_output = first_layer.calculate_neuron_output()
 first_layer_activation = reLu.forward(first_layer_output)
@@ -85,6 +114,24 @@ second_layer_activation = reLu.forward(second_layer_output)
 output_layer = Layer(second_layer_activation, 60, 10)
 output_layer_output = output_layer.calculate_neuron_output()
 output_layer_activation = soft.forward(output_layer_output)
-soft.backward(output_layer_output)
-loss_function = Loss()
-loss = loss_function.categorical_cross_entropy(output_layer_activation, y_train)
+loss = soft_loss_combo.forward(output_layer_activation, y_train)
+print(loss)
+
+## Backward pass
+soft_loss_combo.backward(soft_loss_combo.ouput,y_train)
+output_layer.backward(soft_loss_combo.dinputs)
+second_layer.backward(output_layer.dinputs)
+first_layer.backward(second_layer.dinputs)
+print(first_layer.dbias)
+print(first_layer.dweights)
+
+
+
+
+# soft_output = np.array([[0.7,0.1,0.2],[0.1,0.5,0.4],[0.02,0.9,0.08]])
+# targ = np.array([0,1,1])
+#
+# soft_loss = softmax_loss_combination()
+# soft_loss.backward(soft_output,targ)
+# dvalues1 = soft_loss.dinputs
+# print(dvalues1)
