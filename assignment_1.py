@@ -9,6 +9,10 @@ y_train = y_train[0:100]
 x_train = x_train[:100]
 x_train = x_train.reshape(x_train.shape[0], -1)
 
+def min_max_scaling(inputs):
+    inputs_max = np.max(inputs)
+    inputs_min = np.min(inputs)
+    return np.divide(np.subtract(inputs,inputs_max), (inputs_max-inputs_min))
 
 def one_hot(y, num_of_classes):
     ohs = np.zeros((y.shape[0], num_of_classes))
@@ -19,18 +23,19 @@ def one_hot(y, num_of_classes):
 
 classes = 10
 y_train = one_hot(y_train, 10)
+x_train = min_max_scaling(x_train)
 
 
 class Layer:
-    def __init__(self, inputs, number_of_inputs, number_of_neurons):
-        self.inputs = inputs
+    def __init__(self, number_of_inputs, number_of_neurons):
         self.output = 0
         self.number_of_inputs = number_of_inputs
         self.number_of_neurons = number_of_neurons
-        self.weights = np.random.rand(number_of_inputs, self.number_of_neurons)
+        self.weights = 0.1*np.random.randn(number_of_inputs, self.number_of_neurons)
         self.bias = np.zeros([1, number_of_neurons])
 
-    def calculate_neuron_output(self):
+    def calculate_neuron_output(self, inputs):
+        self.inputs = inputs
         self.output = np.dot(self.inputs, self.weights) + self.bias
         return self.output
 
@@ -102,29 +107,56 @@ class Softmax_loss_combination():
         self.dinputs[range(sample), y] -= 1
         self.dinputs = self.dinputs/sample
 
+class SGD_optimization():
+    def __init__(self,learning_rate):
+        self.learning_rate = learning_rate
+
+    def update_parameters(self,layer):
+        layer.weights += self.learning_rate*layer.dweights
+        layer.bias += self.learning_rate*layer.dbias
+
+def accuracy(y_pred,y):
+    accuracy = np.mean(y_pred==y)
+    return accuracy
+
 soft = Softmax()
 reLu = ReLU()
+SGD = SGD_optimization(learning_rate=0.1)
 soft_loss_combo = Softmax_loss_combination()
-first_layer = Layer(x_train, 784, 60)
-first_layer_output = first_layer.calculate_neuron_output()
-first_layer_activation = reLu.forward(first_layer_output)
-second_layer = Layer(first_layer_activation, 60, 60)
-second_layer_output = second_layer.calculate_neuron_output()
-second_layer_activation = reLu.forward(second_layer_output)
-output_layer = Layer(second_layer_activation, 60, 10)
-output_layer_output = output_layer.calculate_neuron_output()
-output_layer_activation = soft.forward(output_layer_output)
-loss = soft_loss_combo.forward(output_layer_activation, y_train)
-print(loss)
+first_layer = Layer(784, 60)
+second_layer = Layer(60, 60)
+output_layer = Layer(60, 10)
+X = x_train
 
-## Backward pass
-soft_loss_combo.backward(soft_loss_combo.ouput,y_train)
-output_layer.backward(soft_loss_combo.dinputs)
-second_layer.backward(output_layer.dinputs)
-first_layer.backward(second_layer.dinputs)
-print(first_layer.dbias)
-print(first_layer.dweights)
+for epochs in range(100):
+    first_layer_output = first_layer.calculate_neuron_output(X)
+    first_layer_activation = reLu.forward(first_layer_output)
+    second_layer_output = second_layer.calculate_neuron_output(first_layer_activation)
+    second_layer_activation = reLu.forward(second_layer_output)
+    output_layer_output = output_layer.calculate_neuron_output(second_layer_activation)
+    output_layer_activation = soft.forward(output_layer_output)
+    loss = soft_loss_combo.forward(output_layer_activation, y_train)
+    acc = accuracy(output_layer_activation, y_train)
+    print("Epoch:",end=" ")
+    print(epochs,end=" ")
+    print("Loss:",end=" ")
+    print(loss,end=" ")
+    print("Accuracy:",end=" ")
+    print(acc)
+    ## Backward pass
+    soft_loss_combo.backward(soft_loss_combo.ouput, y_train)
+    output_layer.backward(soft_loss_combo.dinputs)
+    second_layer.backward(output_layer.dinputs)
+    first_layer.backward(second_layer.dinputs)
 
+    ##Optimization
+
+    SGD.update_parameters(output_layer)
+    SGD.update_parameters(second_layer)
+    SGD.update_parameters(first_layer)
+
+    print(first_layer.weights)
+    print(first_layer.bias)
 
 
 
