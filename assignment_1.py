@@ -33,6 +33,8 @@ class Layer:
         self.number_of_neurons = number_of_neurons
         self.weights = 0.1 * np.random.randn(number_of_inputs, self.number_of_neurons)
         self.bias = np.zeros([1, number_of_neurons])
+        self.weight_cache = np.zeros_like(self.weights)
+        self.bias_cache = np.zeros_like(self.bias)
 
     def calculate_neuron_output(self, inputs):
         self.inputs = inputs
@@ -117,8 +119,62 @@ class SGD_optimization():
         self.learning_rate = learning_rate
 
     def update_parameters(self, layer):
-        layer.weights += self.learning_rate * layer.dweights
-        layer.bias += self.learning_rate * layer.dbias
+        layer.weights += -self.learning_rate * layer.dweights
+        layer.bias += -self.learning_rate * layer.dbias
+
+
+class SGD_optimization_mommentum():
+    def __init__(self,learning_rate,beta):
+        self.learning_rate = learning_rate
+        self.beta = beta
+        self.updates = 0
+
+    def update_parameters(self, layer):
+
+        if self.updates == 0:
+            self.weight_momentum = np.zeros_like(layer.weights)
+            self.bias_momentum = np.zeros_like(layer.bias)
+            self.updates += 1
+        else:
+            self.weight_momentum = layer.weights
+            self.bias_momentum = layer.bias
+
+        layer.weights = self.beta*self.weight_momentum - self.learning_rate * layer.dweights
+        layer.bias = self.beta*self.bias_momentum - self.learning_rate * layer.dbias
+
+class SGD_optimization_mommentum():
+    def __init__(self,learning_rate,beta):
+        self.learning_rate = learning_rate
+        self.beta = beta
+        self.updates = 0
+
+    def update_parameters(self, layer):
+
+        if self.updates == 0:
+            self.weight_momentum = np.zeros_like(layer.weights)
+            self.bias_momentum = np.zeros_like(layer.bias)
+            self.updates += 1
+        else:
+            self.weight_momentum = layer.weights
+            self.bias_momentum = layer.bias
+
+        layer.weights += self.beta*self.weight_momentum - self.learning_rate * layer.dweights
+        layer.bias += self.beta*self.bias_momentum - self.learning_rate * layer.dbias
+
+
+class RMSProp_optimizer():
+    def __init__(self,learning_rate,rho):
+        self.learning_rate = learning_rate
+        self.rho = rho
+        self.updates = 0
+        self.epsilon = 1e-7 # helps with gradient explosion
+    def update_parameters(self, layer):
+
+        layer.weight_cache = self.rho+layer.weight_cache + (1-self.rho)*layer.dweights**2
+        layer.bias_cache = self.rho+layer.bias_cache + (1-self.rho)*layer.dbias**2
+
+        layer.weights += self.learning_rate*layer.dweights/(np.sqrt(layer.weight_cache) + self.epsilon)
+        layer.bias += self.learning_rate*layer.dbias/(np.sqrt(layer.bias_cache) + self.epsilon)
 
 
 def accuracy(y_pred, y):
@@ -136,7 +192,7 @@ def shuffle_inputs(x_input, y_input):
 
 soft = Softmax()
 reLu = ReLU()
-SGD = SGD_optimization(learning_rate=0.001)
+SGD = RMSProp_optimizer(learning_rate=.01, rho = 0.01)
 soft_loss_combo = Softmax_loss_combination()
 first_layer = Layer(784, 60)
 second_layer = Layer(60, 128)
