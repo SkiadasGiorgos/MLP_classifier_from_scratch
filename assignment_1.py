@@ -5,7 +5,6 @@ from sklearn.preprocessing import OneHotEncoder
 
 (x_train, y_train), (x_test, y_test) = mnist.load_data()
 
-x_train = x_train.reshape(x_train.shape[0], -1)
 
 
 def min_max_scaling(inputs):
@@ -19,12 +18,6 @@ def one_hot(y, num_of_classes):
     for i, y in enumerate(y):
         ohs[i][y] = 1
     return ohs
-
-
-classes = 10
-y_train = one_hot(y_train, 10)
-x_train = min_max_scaling(x_train)
-
 
 class Layer:
     def __init__(self, number_of_inputs, number_of_neurons):
@@ -124,7 +117,7 @@ class SGD_optimization():
 
 
 class SGD_optimization_mommentum():
-    def __init__(self,learning_rate,beta):
+    def __init__(self, learning_rate, beta):
         self.learning_rate = learning_rate
         self.beta = beta
         self.updates = 0
@@ -139,11 +132,12 @@ class SGD_optimization_mommentum():
             self.weight_momentum = layer.weights
             self.bias_momentum = layer.bias
 
-        layer.weights = self.beta*self.weight_momentum - self.learning_rate * layer.dweights
-        layer.bias = self.beta*self.bias_momentum - self.learning_rate * layer.dbias
+        layer.weights = self.beta * self.weight_momentum - self.learning_rate * layer.dweights
+        layer.bias = self.beta * self.bias_momentum - self.learning_rate * layer.dbias
+
 
 class SGD_optimization_mommentum():
-    def __init__(self,learning_rate,beta):
+    def __init__(self, learning_rate, beta):
         self.learning_rate = learning_rate
         self.beta = beta
         self.updates = 0
@@ -158,23 +152,23 @@ class SGD_optimization_mommentum():
             self.weight_momentum = layer.weights
             self.bias_momentum = layer.bias
 
-        layer.weights += self.beta*self.weight_momentum - self.learning_rate * layer.dweights
-        layer.bias += self.beta*self.bias_momentum - self.learning_rate * layer.dbias
+        layer.weights += self.beta * self.weight_momentum - self.learning_rate * layer.dweights
+        layer.bias += self.beta * self.bias_momentum - self.learning_rate * layer.dbias
 
 
 class RMSProp_optimizer():
-    def __init__(self,learning_rate,rho):
+    def __init__(self, learning_rate, rho):
         self.learning_rate = learning_rate
         self.rho = rho
         self.updates = 0
-        self.epsilon = 1e-7 # helps with gradient explosion
+        self.epsilon = 1e-7  # helps with gradient explosion
+
     def update_parameters(self, layer):
+        layer.weight_cache = self.rho + layer.weight_cache + (1 - self.rho) * layer.dweights ** 2
+        layer.bias_cache = self.rho + layer.bias_cache + (1 - self.rho) * layer.dbias ** 2
 
-        layer.weight_cache = self.rho+layer.weight_cache + (1-self.rho)*layer.dweights**2
-        layer.bias_cache = self.rho+layer.bias_cache + (1-self.rho)*layer.dbias**2
-
-        layer.weights += self.learning_rate*layer.dweights/(np.sqrt(layer.weight_cache) + self.epsilon)
-        layer.bias += self.learning_rate*layer.dbias/(np.sqrt(layer.bias_cache) + self.epsilon)
+        layer.weights += self.learning_rate * layer.dweights / (np.sqrt(layer.weight_cache) + self.epsilon)
+        layer.bias += self.learning_rate * layer.dbias / (np.sqrt(layer.bias_cache) + self.epsilon)
 
 
 def accuracy(y_pred, y):
@@ -188,52 +182,102 @@ def shuffle_inputs(x_input, y_input):
     x_output = x_input[number_of_indices]
     y_output = y_input[number_of_indices]
     return x_output, y_output
+def neuron_forward_pass(input_data,layer,activation_functions):
+    layer_output = layer.calculate_neuron_output(input_data)
+    layer_activation = activation_functions.forward(layer_output)
+    return layer_activation
 
+x_train = x_train.reshape(x_train.shape[0], -1)
+x_test =  x_test.reshape(x_test.shape[0], -1)
+classes = 10
+y_train = one_hot(y_train, 10)
+y_test = one_hot(y_test,10)
+x_train = min_max_scaling(x_train)
+x_test = min_max_scaling(x_test)
 
 soft = Softmax()
 reLu = ReLU()
-SGD = RMSProp_optimizer(learning_rate=.01, rho = 0.01)
+SGD = RMSProp_optimizer(learning_rate=.001, rho=0.001)
 soft_loss_combo = Softmax_loss_combination()
 first_layer = Layer(784, 60)
 second_layer = Layer(60, 128)
 third_layer = Layer(128, 256)
+fourth_layer = Layer(256,256)
 output_layer = Layer(256, 10)
 batch_size = 1000
+epochs = 100
+
+
+layers = [first_layer,second_layer,third_layer,output_layer]
+activation_functions = [reLu,reLu,reLu,soft]
+#
+# layers = []
+# activation_functions = []
+#
+#
+# layers.append(Layer(784, 60))
+# layers.append(Layer(60, 128))
+# layers.append(Layer(128, 256))
+# layers.append(Layer(256, 10))
+# activation_functions.append(reLu)
+# activation_functions.append(reLu)
+# activation_functions.append(reLu)
+# activation_functions.append(Softmax)
 
 number_of_runs = int(x_train.shape[0] / batch_size)
 
-for epochs in range(100):
+for epoch in range(epochs):
     x_train, y_train = shuffle_inputs(x_train, y_train)
     for step in range(number_of_runs):
         x_train_batch = x_train[step * (batch_size + 1):(step * (batch_size + 1) + batch_size):1, :]
         y_train_batch = y_train[step * (batch_size + 1):(step * (batch_size + 1) + batch_size), :]
-        first_layer_output = first_layer.calculate_neuron_output(x_train_batch)
-        first_layer_activation = reLu.forward(first_layer_output)
-        second_layer_output = second_layer.calculate_neuron_output(first_layer_activation)
-        second_layer_activation = reLu.forward(second_layer_output)
-        third_layer_output = third_layer.calculate_neuron_output(second_layer_activation)
-        third_layer_activation = reLu.forward(third_layer_output)
-        output_layer_output = output_layer.calculate_neuron_output(third_layer_activation)
-        output_layer_activation = soft.forward(output_layer_output)
-        loss = soft_loss_combo.forward(output_layer_activation, y_train_batch)
-        acc = accuracy(output_layer_activation, y_train_batch)
+        # First layer inputs don't follow the same principal as the rest, since every other layer
+        # takes as input the output of the previous one
+        layers[0].inputs = x_train_batch
+
+        for i in range(len(layers)):
+            if i == 0:
+                layers[i].inputs = x_train_batch
+            else:
+                layers[i].inputs = activation_functions[i-1].output
+            neuron_forward_pass(layers[i].inputs,layers[i],activation_functions[i])
+
+        loss = soft_loss_combo.forward(activation_functions[-1].output, y_train_batch)
+        acc = accuracy(activation_functions[-1].output, y_train_batch)
 
         ## Backward pass
+
         soft_loss_combo.backward(soft_loss_combo.ouput, y_train_batch)
-        output_layer.backward(soft_loss_combo.dinputs)
-        third_layer.backward(output_layer.dinputs)
-        second_layer.backward(third_layer.dinputs)
-        first_layer.backward(second_layer.dinputs)
+
+        for i in range(len(layers)-1,-1,-1):
+            # Output layer inputs don't follow the same principal as the rest, since every other layer
+            # takes as input the output of the next one
+            if i == len(layers)-1:
+                input = soft_loss_combo.dinputs
+                pass
+            else:
+                input = layers[i+1].dinputs
+
+            layers[i].backward(input)
 
         ##Optimization
 
-        SGD.update_parameters(output_layer)
-        SGD.update_parameters(second_layer)
-        SGD.update_parameters(first_layer)
-        SGD.update_parameters(third_layer)
+        for i in range(len(layers)):
+            SGD.update_parameters(layers[i])
+    #
+    # first_layer_output = first_layer.calculate_neuron_output(x_test)
+    # first_layer_activation = reLu.forward(first_layer_output)
+    # second_layer_output = second_layer.calculate_neuron_output(first_layer_activation)
+    # second_layer_activation = reLu.forward(second_layer_output)
+    # third_layer_output = third_layer.calculate_neuron_output(second_layer_activation)
+    # third_layer_activation = reLu.forward(third_layer_output)
+    # output_layer_output = output_layer.calculate_neuron_output(third_layer_activation)
+    # output_layer_activation = soft.forward(output_layer_output)
+    # val_loss = soft_loss_combo.forward(output_layer_activation, y_test)
+    # val_acc = accuracy(output_layer_activation, y_test)
 
     print("Epoch:", end=" ")
-    print(epochs, end=" ")
+    print(epoch, end=" ")
     print("Loss:", end=" ")
     print(loss, end=" ")
     print("Accuracy:", end=" ")
