@@ -30,20 +30,20 @@ x_test = min_max_scaling(x_test)
 
 soft = Softmax()
 reLu = ReLU()
-SGD = RMSProp_optimizer(learning_rate=1, rho=1e-3,decay=True, decay_rate=0.01)
+SGD = RMSProp_optimizer(learning_rate=1e-3, rho=0.95,decay=False, decay_rate=1e-4)
 accuracy = Accuracy()
 soft_loss_combo = Softmax_loss_combination()
 
-first_layer = Layer(784, 256)
-second_layer = Layer(256, 128)
-third_layer = Layer(128, 256)
-output_layer = Layer(256, 10)
+first_layer = Layer(784, 256, glorot = False)
+second_layer = Layer(256, 128, glorot = False)
+third_layer = Layer(128, 256, glorot = False)
+output_layer = Layer(256, 10, glorot = False)
 batch_size = 256
 epochs = 100
 
 
 layers = [first_layer,second_layer,third_layer,output_layer]
-activation_functions = [reLu,reLu,reLu,soft]
+activation_functions = [reLu,soft,reLu,soft]
 
 number_of_runs = int(x_train.shape[0] / batch_size)
 
