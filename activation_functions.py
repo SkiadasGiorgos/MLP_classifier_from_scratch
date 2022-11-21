@@ -3,10 +3,11 @@ import numpy as np
 class Softmax:
 
     def forward(self, inputs):
+        self.inputs = inputs
         # the subtraction helps with memory overflow (not mentioned in nn book)
         exponent = np.exp(inputs - np.max(inputs, axis=1, keepdims=True))
         exponent_sum = np.sum(exponent, axis=1, keepdims=True)
-        self.output = np.divide(exponent, exponent_sum)
+        self.output = exponent/ exponent_sum
         return self.output
 
     def backward(self, dvalues):
@@ -24,6 +25,8 @@ class ReLU:
         return self.output
 
     def backward(self, dvalues):
-        self.dvalues = dvalues.copy
-        self.dvalues = np.sign(self.inputs)
+        self.dinputs = dvalues.copy
+        self.dinputs = np.heaviside(self.inputs,0)
+
+
 

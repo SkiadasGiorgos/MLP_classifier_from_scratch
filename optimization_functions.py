@@ -8,27 +8,6 @@ class SGD_optimization():
         layer.weights += -self.learning_rate * layer.dweights
         layer.bias += -self.learning_rate * layer.dbias
 
-
-class SGD_optimization_mommentum():
-    def __init__(self, learning_rate, beta):
-        self.learning_rate = learning_rate
-        self.beta = beta
-        self.updates = 0
-
-    def update_parameters(self, layer):
-
-        if self.updates == 0:
-            self.weight_momentum = np.zeros_like(layer.weights)
-            self.bias_momentum = np.zeros_like(layer.bias)
-            self.updates += 1
-        else:
-            self.weight_momentum = layer.weights
-            self.bias_momentum = layer.bias
-
-        layer.weights = self.beta * self.weight_momentum - self.learning_rate * layer.dweights
-        layer.bias = self.beta * self.bias_momentum - self.learning_rate * layer.dbias
-
-
 class SGD_optimization_mommentum():
     def __init__(self, learning_rate, beta):
         self.learning_rate = learning_rate

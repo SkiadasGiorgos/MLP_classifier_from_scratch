@@ -4,7 +4,7 @@ import random
 def min_max_scaling(inputs):
     inputs_max = np.max(inputs)
     inputs_min = np.min(inputs)
-    return (np.divide(np.subtract(inputs, inputs_max), (inputs_max - inputs_min)) - 0.5) * 2
+    return (np.divide(np.subtract(inputs, inputs_max), (inputs_max - inputs_min)))
 
 
 def one_hot(y, num_of_classes):
