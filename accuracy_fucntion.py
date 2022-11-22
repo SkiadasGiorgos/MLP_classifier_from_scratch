@@ -15,3 +15,4 @@ class Accuracy():
         acc = self.accuracy
         self.batch_accuracy.append(self.accuracy)
 
+
