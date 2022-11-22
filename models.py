@@ -1,6 +1,6 @@
-import numpy as np
 from loss_functions import Softmax_loss_combination
 from data_preprocessing import shuffle_inputs
+
 class Model:
     def __init__(self):
         self.layers =[]
@@ -69,6 +69,8 @@ class Model:
                 for layer in self.trainable_layers:
                     self.optimizer.update_parameters(layer)
 
+            accuracy = self.accuracy.epoch_accuracy_update()
+            loss = self.loss.epoch_loss_update()
             if not epoch%print_every:
                 print(f'epoch:{epoch},'+
                       f'acc:{accuracy:},',

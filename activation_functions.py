@@ -9,10 +9,10 @@ class Softmax:
         exponent = np.exp(inputs - np.max(inputs, axis=1, keepdims=True))
         exponent_sum = np.sum(exponent, axis=1, keepdims=True)
         self.output = exponent / exponent_sum
-        return self.output
+
 
     def predictions(self,outputs):
-        return(outputs>0.5)*1
+        return np.argmax(outputs,axis=1)
 
     def backward(self, dvalues):
         self.dinputs = np.empty_like(dvalues)

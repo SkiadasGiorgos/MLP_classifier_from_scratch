@@ -24,12 +24,12 @@ from activation_functions import Softmax
 #         self.dinputs = self.dinputs / samples
 
 class Loss:
-
-    def remember_trainable_layers(self,trainable_layers):
-        self.trainable_layers = trainable_layers
     def __init__(self):
         self.batch_loss = []
         self.epoch_loss = []
+
+    def remember_trainable_layers(self,trainable_layers):
+        self.trainable_layers = trainable_layers
 
     def calculate(self, output, y):
         sample_losses = self.forward(output, y)
@@ -45,6 +45,10 @@ class Loss:
             if layer.bias_regularizer > 0:
                 regularization_loss += layer.bias_regularizer * np.sum(layer.bias * layer.bias)
         return regularization_loss
+
+    def epoch_loss_update(self):
+        self.epoch_loss.append(np.mean(self.batch_loss))
+        return self.epoch_loss[-1]
 
 
 class CategoricalCrossEntropy(Loss):
@@ -83,6 +87,3 @@ class Softmax_loss_combination():
         self.dinputs[range(sample), y] -= 1
         self.dinputs = self.dinputs / sample
 
-    def epoch_loss(self):
-        self.loss.epoch_loss.append(np.mean(self.loss.batch_loss))
-        return self.loss.epoch_loss[-1]

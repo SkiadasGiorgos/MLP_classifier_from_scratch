@@ -10,12 +10,14 @@ class Layer:
         self.number_of_neurons = number_of_neurons
         self.weights = np.zeros([number_of_inputs, self.number_of_neurons])
         if not glorot:
-            self.weights = 0.01 * np.random.randn(number_of_inputs, self.number_of_neurons)
+            self.weights = 0.001 * np.random.randn(number_of_inputs, self.number_of_neurons)
         else:
             self.glorot_weight_initialization()
         self.bias = np.zeros([1, number_of_neurons])
         self.weight_cache = np.zeros_like(self.weights)
         self.bias_cache = np.zeros_like(self.bias)
+        self.weight_momentums = np.zeros_like(self.weights)
+        self.bias_momentums = np.zeros_like(self.bias)
         self.weight_regularizer = weight_regularizer
         self.bias_regularizer = bias_regularizer
 

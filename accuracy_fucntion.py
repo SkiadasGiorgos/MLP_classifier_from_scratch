@@ -11,8 +11,10 @@ class Accuracy():
         return epoch_acc
 
     def calculate_accuracy(self, y_pred, y):
+        if len(y.shape) == 2:
+            y = np.argmax(y,axis = 1)
         self.accuracy = np.mean(y_pred == y)
-        acc = self.accuracy
         self.batch_accuracy.append(self.accuracy)
+
 
 
