@@ -10,9 +10,8 @@ class Softmax:
         exponent_sum = np.sum(exponent, axis=1, keepdims=True)
         self.output = exponent / exponent_sum
 
-
-    def predictions(self,outputs):
-        return np.argmax(outputs,axis=1)
+    def predictions(self, outputs):
+        return np.argmax(outputs, axis=1)
 
     def backward(self, dvalues):
         self.dinputs = np.empty_like(dvalues)
@@ -29,5 +28,5 @@ class ReLU:
         return self.output
 
     def backward(self, dvalues):
-        self.dinputs = dvalues.copy
-        self.dinputs = np.heaviside(self.inputs, 0)
+        self.dinputs = dvalues.copy()
+        self.dinputs[self.inputs <= 0] = 0
