@@ -35,8 +35,6 @@ model.add(Layer(x_train.shape[1], 128, glorot=False, weight_regularizer=0, bias_
 model.add(ReLU())
 model.add(Layer(128, 128, glorot=False, weight_regularizer=0, bias_regularizer=0))
 model.add(ReLU())
-# model.add(Layer(256, 128, glorot=True, weight_regularizer=0, bias_regularizer=0))
-# model.add(ReLU())
 model.add(Layer(128, 10, glorot=False, weight_regularizer=0, bias_regularizer=0))
 model.add(Softmax())
 
