@@ -1,28 +1,6 @@
 import numpy as np
 from activation_functions import Softmax
 
-
-# class Loss:
-#     def __init__(self):
-#         self.batch_loss = []
-#         self.epoch_loss = []
-#
-#     def categorical_cross_entropy(self, y_predict, y):
-#         samples = len(y)
-#         y_predict_clipped = np.clip(y_predict, 1e-7, 1 - 1e-7)
-#         correct_confidences = np.sum(y_predict_clipped * y, axis=1)
-#         log_likelihood = -np.log(correct_confidences)
-#         data_loss = np.mean(log_likelihood)
-#         self.batch_loss.append(data_loss)
-#         return data_loss
-#
-#     def categorical_cross_entropy_backward(self, dvalues, y):
-#         samples = len(dvalues)
-#         labels = len(dvalues[0])
-#
-#         self.dinputs = -y / dvalues
-#         self.dinputs = self.dinputs / samples
-
 class Loss:
     def __init__(self):
         self.batch_loss = []

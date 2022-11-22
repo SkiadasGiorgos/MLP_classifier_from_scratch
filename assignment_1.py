@@ -6,10 +6,11 @@ from optimization_functions import RMSProp_optimizer, SGD_optimization_mommentum
 from accuracy_fucntion import Accuracy
 from data_preprocessing import one_hot, min_max_scaling
 from models import Model
+import numpy as np
 
 (x_train, y_train), (x_test, y_test) = mnist.load_data()
 
-x_train = x_train.reshape(x_train.shape[0], -1)
+x_train = (x_train.reshape(x_train.shape[0], -1).astype(np.float32)-127.5)/127.5
 x_test = x_test.reshape(x_test.shape[0], -1)
 
 classes = 10
@@ -21,7 +22,8 @@ x_test = min_max_scaling(x_test)
 soft = Softmax()
 # optimizer = RMSProp_optimizer(learning_rate=1e-2, rho=0.99, decay=False, decay_rate=1e-3)
 # optimizer = SGD_optimization_mommentum(learning_rate=1e-3, beta=.01)
-optimizer = Adam(learning_rate=1e-3, decay=1e-3, beta1=.9, beta2=0.99)
+# optimizer = SGD_optimization(learning_rate=1e-2)
+optimizer = Adam(learning_rate=1e-3, decay=0, beta1=.9, beta2=0.99)
 accuracy = Accuracy()
 
 soft_loss_combo = Softmax_loss_combination()
@@ -29,13 +31,13 @@ loss = CategoricalCrossEntropy
 
 epochs = 100
 model = Model()
-model.add(Layer(784, 512, glorot=True, weight_regularizer=0, bias_regularizer=0))
+model.add(Layer(x_train.shape[1], 128, glorot=False, weight_regularizer=0, bias_regularizer=0))
 model.add(ReLU())
-model.add(Layer(512, 256, glorot=True, weight_regularizer=0, bias_regularizer=0))
+model.add(Layer(128, 128, glorot=False, weight_regularizer=0, bias_regularizer=0))
 model.add(ReLU())
 # model.add(Layer(256, 128, glorot=True, weight_regularizer=0, bias_regularizer=0))
 # model.add(ReLU())
-model.add(Layer(256, 10, glorot=True, weight_regularizer=0, bias_regularizer=0))
+model.add(Layer(128, 10, glorot=False, weight_regularizer=0, bias_regularizer=0))
 model.add(Softmax())
 
 model.set(loss=CategoricalCrossEntropy(), optimizer=optimizer, accuracy=accuracy)
