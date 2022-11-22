@@ -1,5 +1,6 @@
 import numpy as np
 from loss_functions import Softmax_loss_combination
+from data_preprocessing import shuffle_inputs
 class Model:
     def __init__(self):
         self.layers =[]
@@ -46,21 +47,27 @@ class Model:
 
             self.softmax_classifier_output = Softmax_loss_combination()
 
-    def train(self,x,y,*,epochs=1,print_every=1):
+    def train(self,x,y,*,epochs=1,print_every=1,batch_size):
+        number_of_runs = x.shape[0]//batch_size
+        x,y = shuffle_inputs(x,y)
+
         for epoch in range(1,epochs+1):
-            output = self.forward(x)
+            for step in range(number_of_runs):
+                x_batch = x[(step*batch_size):((step+1)*batch_size ),:]
+                y_batch = y[(step*batch_size):((step+1)*batch_size ),:]
+                output = self.forward(x_batch)
 
-            data_loss = self.loss.calculate(output,y)
-            reguralization_loss = self.loss.l2_regularization()
-            loss = data_loss + reguralization_loss
+                data_loss = self.loss.calculate(output,y_batch)
+                reguralization_loss = self.loss.l2_regularization()
+                loss = data_loss + reguralization_loss
 
-            predictions = self.output_layer_activation.predictions(output)
-            accuracy = self.accuracy.calculate_accuracy(predictions,y)
+                predictions = self.output_layer_activation.predictions(output)
+                accuracy = self.accuracy.calculate_accuracy(predictions,y_batch)
 
-            self.backward(output,y)
+                self.backward(output,y_batch)
 
-            for layer in self.trainable_layers:
-                self.optimizer.update_parameters(layer)
+                for layer in self.trainable_layers:
+                    self.optimizer.update_parameters(layer)
 
             if not epoch%print_every:
                 print(f'epoch:{epoch},'+
