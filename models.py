@@ -1,5 +1,6 @@
 from loss_functions import Softmax_loss_combination
 from data_preprocessing import shuffle_inputs
+from matplotlib import pyplot as plt
 
 class Model:
     def __init__(self):
@@ -106,6 +107,19 @@ class Model:
 
         for layer in reversed(self.layers[:-1]):
             layer.backward(layer.next.dinputs)
+
+    def print_results(self):
+        plt.plot(self.accuracy.epoch_accuracy)
+        plt.xlabel("Accuracy")
+        plt.ylabel("Epoch")
+        plt.legend("Accuracy per Epoch")
+        plt.show()
+
+        plt.plot(self.loss.epoch_loss)
+        plt.xlabel("Loss")
+        plt.ylabel("Epoch")
+        plt.legend("Loss per Epoch")
+        plt.show()
 
 
 class Layer_Input():

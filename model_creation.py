@@ -48,5 +48,5 @@ model.set(loss=CategoricalCrossEntropy(), optimizer=optimizer, accuracy=accuracy
 model.finalize_model()
 model.train(x_train, y_train, epochs=epochs, print_every=1, batch_size=128, x_validation=x_validation,
             y_validation=y_validation)
-
+model.print_results()
 model.validation(x_test,y_test, test=True)
