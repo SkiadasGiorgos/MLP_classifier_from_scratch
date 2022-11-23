@@ -16,5 +16,12 @@ class Accuracy():
         self.accuracy = np.mean(y_pred == y)
         self.batch_accuracy.append(self.accuracy)
 
+    def validation_accuracy(self, y_pred, y):
+        if len(y.shape) == 2:
+            y = np.argmax(y, axis=1)
+        validation_accuracy = np.mean(y_pred == y)
+        return validation_accuracy
 
+    def new_pass(self):
+        self.batch_accuracy = []
 
