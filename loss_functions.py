@@ -5,7 +5,7 @@ class Loss:
     def __init__(self):
         self.batch_loss = []
         self.epoch_loss = []
-
+        self.batch_reguralization_loss = []
     def remember_trainable_layers(self,trainable_layers):
         self.trainable_layers = trainable_layers
 
@@ -15,6 +15,10 @@ class Loss:
         self.batch_loss.append(data_loss)
         return data_loss
 
+    def validation_loss(self,output,y):
+        sample_losses = self.forward(output, y)
+        data_loss = np.mean(sample_losses)
+        return data_loss + self.l2_regularization()
     def l2_regularization(self):
         regularization_loss = 0
         for layer in self.trainable_layers:
@@ -22,12 +26,19 @@ class Loss:
                 regularization_loss += layer.weight_regularizer * np.sum(layer.weights * layer.weights)
             if layer.bias_regularizer > 0:
                 regularization_loss += layer.bias_regularizer * np.sum(layer.bias * layer.bias)
+            self.batch_reguralization_loss.append(regularization_loss)
         return regularization_loss
 
     def epoch_loss_update(self):
-        self.epoch_loss.append(np.mean(self.batch_loss))
+        if not self.batch_reguralization_loss:
+           self.epoch_loss.append(np.mean(self.batch_loss))
+        else:
+            self.epoch_loss.append(np.mean(self.batch_loss)+np.mean(self.batch_reguralization_loss))
+
         return self.epoch_loss[-1]
 
+    def new_pass(self):
+        self.batch_loss = []
 
 class CategoricalCrossEntropy(Loss):
     def forward(self, y_pred, y_true):
